@@ -6,7 +6,7 @@ using namespace std;
  
 vector<vector<int>> Sbox = {
     {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
-    {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x75, 0xc0},
+    {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
     {0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15},
     {0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75},
     {0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84},
@@ -95,7 +95,7 @@ int MixColumns_Shift(int tmp,int a){
     if(a == 2) {
         tmp = tmp * 2;
     }else if(a == 3){
-        tmp = (tmp * 2) ^ tmp;
+        tmp = (tmp * 2) ^ (tmp * 1);
     }
     return tmp;
 }
@@ -192,21 +192,54 @@ void InvMixColumns(vector<vector<int>>& s){
     return;
 }
 
+void print(vector<vector<int>>& s){
+    cout << "debug:" << endl;
+    for(int i=0;i<4;i++){
+        cout << " ------------";
+        for(int j=0;j<4;j++){
+            if(j==0){
+                cout << endl << "|";
+            }
+            if(s.at(j).at(i) < 16){
+                cout << "0";
+            }
+            cout << hex << s.at(j).at(i) << "|";
+        }
+        cout << endl;
+    }
+    cout << " ------------" << endl;
+    return;
+}
+
 int main(){
     vector<vector<vector<int>>> subkey(11,vector<vector<int>>(4,vector<int>(4,0)));
-    int count = 0;
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            subkey.at(0).at(i).at(j) = count;
-            count++;
-        }
-    }
-
+    subkey.at(0).at(0).at(0) = 0x2b;
+    subkey.at(0).at(0).at(1) = 0x7e;
+    subkey.at(0).at(0).at(2) = 0x15;
+    subkey.at(0).at(0).at(3) = 0x16;
+    subkey.at(0).at(1).at(0) = 0x28;
+    subkey.at(0).at(1).at(1) = 0xae;
+    subkey.at(0).at(1).at(2) = 0xd2;
+    subkey.at(0).at(1).at(3) = 0xa6;
+    subkey.at(0).at(2).at(0) = 0xab;
+    subkey.at(0).at(2).at(1) = 0xf7;
+    subkey.at(0).at(2).at(2) = 0x15;
+    subkey.at(0).at(2).at(3) = 0x88;
+    subkey.at(0).at(3).at(0) = 0x09;
+    subkey.at(0).at(3).at(1) = 0xcf;
+    subkey.at(0).at(3).at(2) = 0x4f;
+    subkey.at(0).at(3).at(3) = 0x3c;
+    // vector<vector<int>> w = {
+    //     {0x2b,0x28,0xab,0x09},
+    //     {0x7e,0xae,0xf7,0xcf},
+    //     {0x15,0xd2,0x15,0x4f},
+    //     {0x16,0xa6,0x88,0x3c},
+    // };
     vector<vector<int>> w = {
-        {0,1,2,3},
-        {4,5,6,7},
-        {8,9,10,11},
-        {12,13,14,15},
+        {0x2b,0x7e,0x15,0x16},
+        {0x28,0xae,0xd2,0xa6},
+        {0xab,0xf7,0x15,0x88},
+        {0x09,0xcf,0x4f,0x3c},
     };
 
     vector<int> Rcon = {
@@ -248,12 +281,17 @@ int main(){
         }
         cout << endl;
     }
-
+    // vector<vector<int>> s = {
+    //     {0x32,0x88,0x31,0xe0},
+    //     {0x43,0x5a,0x31,0x37},
+    //     {0xf6,0x30,0x98,0x07},
+    //     {0xa8,0x8d,0xa2,0x34},
+    // };
     vector<vector<int>> s = {
-        {0x00,0x11,0x22,0x33},
-        {0x44,0x55,0x66,0x77},
-        {0x88,0x99,0xaa,0xbb},
-        {0xcc,0xdd,0xee,0xff},
+        {0x32,0x43,0xf6,0xa8},
+        {0x88,0x5a,0x30,0x8d},
+        {0x31,0x31,0x98,0xa2},
+        {0xe0,0x37,0x07,0x34},
     };
 
     cout << "平文:" << endl;
@@ -263,10 +301,10 @@ int main(){
             if(j==0){
                 cout << endl << "|";
             }
-            if(s.at(i).at(j) < 16){
+            if(s.at(j).at(i) < 16){
                 cout << "0";
             }
-            cout << hex << s.at(i).at(j) << "|";
+            cout << hex << s.at(j).at(i) << "|";
         }
         cout << endl;
     }
@@ -281,7 +319,6 @@ int main(){
     for(int N=1;N<=10;N++){
         SubBytes(s);
         ShiftRows(s);
-
         if(N != 10){
             MixColumns(s);
         }
@@ -300,26 +337,25 @@ int main(){
             if(j==0){
                 cout << endl << "|";
             }
-            if(s.at(i).at(j) < 16){
+            if(s.at(j).at(i) < 16){
                 cout << "0";
             }
-            cout << hex << s.at(i).at(j) << "|";
+            cout << hex << s.at(j).at(i) << "|";
         }
         cout << endl;
     }
     cout << " ------------" << endl;
 
+//復号
     for(int N=10;N>=1;N--){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
                 s.at(i).at(j) = s.at(i).at(j) ^ subkey.at(N).at(i).at(j);
             }
         }
-
         if(N != 10){
             InvMixColumns(s);
         }
-
         InvShiftRows(s);
         InvSubBytes(s);
     }
@@ -330,20 +366,21 @@ int main(){
         }
     }
 
-    cout << "復号化:" << endl;
+    cout << "復号文:" << endl;
     for(int i=0;i<4;i++){
         cout << " ------------";
         for(int j=0;j<4;j++){
             if(j==0){
                 cout << endl << "|";
             }
-            if(s.at(i).at(j) < 16){
+            if(s.at(j).at(i) < 16){
                 cout << "0";
             }
-            cout << hex << s.at(i).at(j) << "|";
+            cout << hex << s.at(j).at(i) << "|";
         }
         cout << endl;
     }
     cout << " ------------" << endl;
+
     return 0;
 }
