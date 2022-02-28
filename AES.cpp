@@ -4,6 +4,7 @@
 #include <sstream>
 using namespace std;
  
+//暗号化用sbox
 vector<vector<int>> Sbox = {
     {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
     {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
@@ -23,6 +24,7 @@ vector<vector<int>> Sbox = {
     {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16},
 };
 
+//復号用sbox
 vector<vector<int>> InvSbox = {
     {0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb},
     {0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb},
@@ -65,6 +67,7 @@ void SubWord(vector<vector<int>>& w){
     return;
 }
 
+//暗号化
 void ShiftRows(vector<vector<int>>& s){
     vector<int> tmp(4);
 
@@ -132,8 +135,7 @@ void MixColumns(vector<vector<int>>& s){
     return;
 }
 
-//begin Dec
-
+//復号
 void InvShiftRows(vector<vector<int>>& s){
     vector<int> tmp(4);
     for(int i=1;i<4;i++){
@@ -173,7 +175,6 @@ int InvMixColumns_Shift(int tmp,int a){
 
 void InvMixColumns(vector<vector<int>>& s){
     vector<int> tmp(4);
-
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
             tmp.at(j) = s.at(i).at(j);
@@ -192,6 +193,7 @@ void InvMixColumns(vector<vector<int>>& s){
     return;
 }
 
+/*デバッグ用関数
 void print(vector<vector<int>>& s){
     cout << "debug:" << endl;
     for(int i=0;i<4;i++){
@@ -210,8 +212,10 @@ void print(vector<vector<int>>& s){
     cout << " ------------" << endl;
     return;
 }
+*/
 
 int main(){
+    //CipherKey
     vector<vector<vector<int>>> subkey(11,vector<vector<int>>(4,vector<int>(4,0)));
     subkey.at(0).at(0).at(0) = 0x2b;
     subkey.at(0).at(0).at(1) = 0x7e;
@@ -229,12 +233,8 @@ int main(){
     subkey.at(0).at(3).at(1) = 0xcf;
     subkey.at(0).at(3).at(2) = 0x4f;
     subkey.at(0).at(3).at(3) = 0x3c;
-    // vector<vector<int>> w = {
-    //     {0x2b,0x28,0xab,0x09},
-    //     {0x7e,0xae,0xf7,0xcf},
-    //     {0x15,0xd2,0x15,0x4f},
-    //     {0x16,0xa6,0x88,0x3c},
-    // };
+
+    //Cipher Key(Word)
     vector<vector<int>> w = {
         {0x2b,0x7e,0x15,0x16},
         {0x28,0xae,0xd2,0xa6},
@@ -256,6 +256,7 @@ int main(){
         0x36, //x^5+x^4+x^2+x^1
     };
 
+    //サブ鍵生成
     for(int i=1;i<=10;i++){
         RotWord(w);
         SubWord(w);
@@ -268,9 +269,9 @@ int main(){
             }
         }
     }
-
+    //サブ鍵出力
     for(int i=0;i<=10;i++){
-        cout << "サブ鍵" << i << ":";
+        cout << "サブ鍵" << dec << i << ":";
         for(int j=0;j<4;j++){
             for(int k=0;k<4;k++){
                 if(subkey.at(i).at(j).at(k) < 16){
@@ -281,19 +282,15 @@ int main(){
         }
         cout << endl;
     }
-    // vector<vector<int>> s = {
-    //     {0x32,0x88,0x31,0xe0},
-    //     {0x43,0x5a,0x31,0x37},
-    //     {0xf6,0x30,0x98,0x07},
-    //     {0xa8,0x8d,0xa2,0x34},
-    // };
+
+    //平文s
     vector<vector<int>> s = {
         {0x32,0x43,0xf6,0xa8},
         {0x88,0x5a,0x30,0x8d},
         {0x31,0x31,0x98,0xa2},
         {0xe0,0x37,0x07,0x34},
     };
-
+    //平文出力
     cout << "平文:" << endl;
     for(int i=0;i<4;i++){
         cout << " ------------";
@@ -310,12 +307,13 @@ int main(){
     }
     cout << " ------------" << endl;
 
+    //1round目AddRoundKey
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
             s.at(i).at(j) = s.at(i).at(j) ^ subkey.at(0).at(i).at(j);
         }
     }
-
+    //暗号化
     for(int N=1;N<=10;N++){
         SubBytes(s);
         ShiftRows(s);
@@ -329,7 +327,7 @@ int main(){
             }
         }
     }
-
+    //暗号化した平文出力
     cout << "暗号化:" << endl;
     for(int i=0;i<4;i++){
         cout << " ------------";
@@ -346,7 +344,7 @@ int main(){
     }
     cout << " ------------" << endl;
 
-//復号
+    //復号
     for(int N=10;N>=1;N--){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
@@ -359,14 +357,14 @@ int main(){
         InvShiftRows(s);
         InvSubBytes(s);
     }
-
+    //最終ラウンドのAddRoundKey
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
             s.at(i).at(j) = s.at(i).at(j) ^ subkey.at(0).at(i).at(j);
         }
     }
-
-    cout << "復号文:" << endl;
+    //復号した平文出力
+    cout << "復号:" << endl;
     for(int i=0;i<4;i++){
         cout << " ------------";
         for(int j=0;j<4;j++){
@@ -381,6 +379,5 @@ int main(){
         cout << endl;
     }
     cout << " ------------" << endl;
-
     return 0;
 }
